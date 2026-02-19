@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiscordLauncher")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e2a33ef31d2523d859cbed45dc03cd00e1d3ef1d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfcc2e804fd92c023530f7ffdcb672a846f491d7")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiscordLauncher")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiscordLauncher")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

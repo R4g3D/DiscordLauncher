@@ -174,19 +174,12 @@ internal static class Program
             await EnsureImagesAsync();
             await ApplyContextImagesAsync(context);
 
-            var focused = FocusDiscordWindow();
-            if (!focused)
+            var broughtForward = BringDiscordToFrontOrLaunch();
+            if (!broughtForward)
             {
-                var launched = LaunchDiscord();
-                if (!launched)
-                {
-                    await SetTitleAsync(context, "Not Found");
-                    await RefreshAllContextStatesAsync();
-                    return;
-                }
-
-                await Task.Delay(1200);
-                FocusDiscordWindow();
+                await SetTitleAsync(context, "Not Found");
+                await RefreshAllContextStatesAsync();
+                return;
             }
 
             await SetTitleAsync(context, DefaultTitle);
@@ -219,6 +212,31 @@ internal static class Program
         return process is not null;
     }
 
+    private static bool BringDiscordToFrontOrLaunch()
+    {
+        if (FocusDiscordWindow())
+        {
+            return true;
+        }
+
+        // If Discord is in tray/background (or not running), this nudges/starts it through updater.
+        if (!LaunchDiscord())
+        {
+            return false;
+        }
+
+        for (var i = 0; i < 20; i++)
+        {
+            Thread.Sleep(200);
+            if (FocusDiscordWindow())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool FocusDiscordWindow()
     {
         var process = FindDiscordWindowProcess();
@@ -235,16 +253,16 @@ internal static class Program
 
     private static Process? FindDiscordWindowProcess()
     {
-        var byName = Process.GetProcessesByName("Discord")
-            .FirstOrDefault(p => p.MainWindowHandle != IntPtr.Zero);
-        if (byName is not null)
+        var byName = Process.GetProcessesByName("Discord");
+        foreach (var process in byName)
         {
-            return byName;
+            if (process.MainWindowHandle != IntPtr.Zero)
+            {
+                return process;
+            }
         }
 
-        return Process.GetProcesses()
-            .FirstOrDefault(p => p.MainWindowHandle != IntPtr.Zero &&
-                                 p.MainWindowTitle.Contains("Discord", StringComparison.OrdinalIgnoreCase));
+        return null;
     }
 
     private static bool IsDiscordRunning()
@@ -265,32 +283,31 @@ internal static class Program
             return;
         }
 
-        using var icon = Icon.ExtractAssociatedIcon(discordBinary);
-        if (icon is null)
+        using var source = ExtractDiscordIconBitmap(discordBinary, 256);
+        if (source is null)
         {
             return;
         }
 
-        using var source = icon.ToBitmap();
         using var normal = new Bitmap(144, 144);
         using (var graphics = Graphics.FromImage(normal))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
             graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-            graphics.Clear(Color.FromArgb(32, 34, 37));
-            graphics.DrawImage(source, new Rectangle(8, 8, 128, 128));
+            graphics.Clear(Color.Transparent);
+            graphics.DrawImage(source, new Rectangle(0, 0, 144, 144));
         }
 
         using var running = new Bitmap(normal);
         using (var graphics = Graphics.FromImage(running))
         using (var badgeBrush = new SolidBrush(Color.FromArgb(43, 172, 119)))
-        using (var badgePen = new Pen(Color.Black, 4))
+        using (var badgePen = new Pen(Color.Black, 4.5f))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             const int size = 144;
-            var badgeDiameter = (int)Math.Round(size * 0.25);
-            var badgeInset = (int)Math.Round(size * 0.07);
+            var badgeDiameter = (int)Math.Round(size * 0.27);
+            var badgeInset = (int)Math.Round(size * 0.03);
             var badgeX = size - badgeDiameter - badgeInset;
             var badgeY = size - badgeDiameter - badgeInset;
             graphics.FillEllipse(badgeBrush, badgeX, badgeY, badgeDiameter, badgeDiameter);
@@ -306,6 +323,28 @@ internal static class Program
         using var ms = new MemoryStream();
         bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
         return $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+    }
+
+    private static Bitmap? ExtractDiscordIconBitmap(string binaryPath, int size)
+    {
+        var handles = new IntPtr[1];
+        var ids = new int[1];
+        var extracted = PrivateExtractIcons(binaryPath, 0, size, size, handles, ids, 1, 0);
+        if (extracted > 0 && handles[0] != IntPtr.Zero)
+        {
+            try
+            {
+                using var icon = Icon.FromHandle(handles[0]);
+                return new Bitmap(icon.ToBitmap());
+            }
+            finally
+            {
+                _ = DestroyIcon(handles[0]);
+            }
+        }
+
+        using var fallback = Icon.ExtractAssociatedIcon(binaryPath);
+        return fallback is null ? null : new Bitmap(fallback.ToBitmap());
     }
 
     private static string? ResolveDiscordBinaryPath()
@@ -444,4 +483,18 @@ internal static class Program
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern uint PrivateExtractIcons(
+        string szFileName,
+        int nIconIndex,
+        int cxIcon,
+        int cyIcon,
+        IntPtr[] phicon,
+        int[] piconid,
+        uint nIcons,
+        uint flags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyIcon(IntPtr hIcon);
 }
