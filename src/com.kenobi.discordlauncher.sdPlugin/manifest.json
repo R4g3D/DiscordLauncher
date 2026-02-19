@@ -1,6 +1,6 @@
 ﻿{
   "Author": "Kenobi",
-  "CodePath": "app.html",
+  "CodePath": "DiscordLauncher.exe",
   "Description": "Dedicated Stream Deck action to reliably launch or focus Discord on Windows.",
   "Name": "Discord Launcher",
   "SDKVersion": 2,

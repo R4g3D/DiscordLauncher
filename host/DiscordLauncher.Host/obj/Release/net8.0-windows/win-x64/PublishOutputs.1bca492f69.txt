@@ -1,0 +1,2 @@
+C:\Users\Kenobi\Documents\DiscordLauncher\src\com.kenobi.discordlauncher.sdPlugin\DiscordLauncher.pdb
+C:\Users\Kenobi\Documents\DiscordLauncher\src\com.kenobi.discordlauncher.sdPlugin\DiscordLauncher.exe

@@ -37,6 +37,18 @@ jobs:
           "plugin_version=$pluginVersion" >> $env:GITHUB_OUTPUT
           "artifact_name=$artifactName" >> $env:GITHUB_OUTPUT
 
+      - name: Build native plugin host
+        shell: pwsh
+        run: |
+          dotnet publish host/DiscordLauncher.Host/DiscordLauncher.Host.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            -o src/com.kenobi.discordlauncher.sdPlugin
+          Remove-Item src/com.kenobi.discordlauncher.sdPlugin/DiscordLauncher.pdb -Force -ErrorAction SilentlyContinue
+
       - name: Package plugin
         id: package
         shell: pwsh
