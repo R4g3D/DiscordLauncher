@@ -310,7 +310,7 @@ internal static class Program
             const float height = 144f;
             var centerX = width * 0.7744f;
             var centerY = height * 0.6771f;
-            var greenDiameter = width * 0.25f;
+            var greenDiameter = width * 0.21f;
             var ringDiameter = greenDiameter * 1.5f;
 
             var ringX = centerX - (ringDiameter / 2f);
