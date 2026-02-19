@@ -306,17 +306,12 @@ internal static class Program
         using (var ringBrush = new SolidBrush(Color.Black))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            const float size = 144f;
-            var baseGreenDiameter = size * 0.255f;
-            var greenDiameter = baseGreenDiameter * 0.925f;
-            var ringDiameter = greenDiameter * 1.29f;
-            var badgeInset = size * 0.065f;
-
-            // Keep baseline anchor behavior, then apply requested offsets.
-            var centerX = size - badgeInset - (baseGreenDiameter / 2f);
-            var centerY = size - badgeInset - (baseGreenDiameter / 2f);
-            centerX += size * -0.04f;
-            centerY += size * -0.05f;
+            const float width = 144f;
+            const float height = 144f;
+            var centerX = width * 0.76510f;
+            var centerY = height * 0.67277f;
+            var greenDiameter = width * 0.1714286f;
+            var ringDiameter = width * 0.3222857f;
 
             var ringX = centerX - (ringDiameter / 2f);
             var ringY = centerY - (ringDiameter / 2f);
