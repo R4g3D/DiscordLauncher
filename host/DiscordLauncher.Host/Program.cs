@@ -303,16 +303,28 @@ internal static class Program
         using var running = new Bitmap(normal);
         using (var graphics = Graphics.FromImage(running))
         using (var badgeBrush = new SolidBrush(Color.FromArgb(43, 172, 119)))
-        using (var badgePen = new Pen(Color.Black, 4.0f))
+        using (var ringBrush = new SolidBrush(Color.Black))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            const int size = 144;
-            var badgeDiameter = (int)Math.Round(size * 0.255);
-            var badgeInset = (int)Math.Round(size * 0.065);
-            var badgeX = size - badgeDiameter - badgeInset;
-            var badgeY = size - badgeDiameter - badgeInset;
-            graphics.FillEllipse(badgeBrush, badgeX, badgeY, badgeDiameter, badgeDiameter);
-            graphics.DrawEllipse(badgePen, badgeX, badgeY, badgeDiameter, badgeDiameter);
+            const float size = 144f;
+            var baseGreenDiameter = size * 0.255f;
+            var greenDiameter = baseGreenDiameter * 0.925f;
+            var ringDiameter = greenDiameter * 1.29f;
+            var badgeInset = size * 0.065f;
+
+            // Keep baseline anchor behavior, then apply requested offsets.
+            var centerX = size - badgeInset - (baseGreenDiameter / 2f);
+            var centerY = size - badgeInset - (baseGreenDiameter / 2f);
+            centerX += size * -0.04f;
+            centerY += size * -0.05f;
+
+            var ringX = centerX - (ringDiameter / 2f);
+            var ringY = centerY - (ringDiameter / 2f);
+            var greenX = centerX - (greenDiameter / 2f);
+            var greenY = centerY - (greenDiameter / 2f);
+
+            graphics.FillEllipse(ringBrush, ringX, ringY, ringDiameter, ringDiameter);
+            graphics.FillEllipse(badgeBrush, greenX, greenY, greenDiameter, greenDiameter);
         }
 
         _normalImageDataUrl = BitmapToDataUrl(normal);
