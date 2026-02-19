@@ -10,7 +10,6 @@ namespace DiscordLauncher.Host;
 internal static class Program
 {
     private const string ActionUuid = "com.kenobi.discordlauncher.launch";
-    private const string DefaultTitle = "Discord";
     private const int OfflineState = 0;
     private const int RunningState = 1;
     private const int PollIntervalMs = 3000;
@@ -152,7 +151,6 @@ internal static class Program
             case "willAppear":
                 Contexts.Add(context);
                 await EnsureImagesAsync();
-                await SetTitleAsync(context, DefaultTitle);
                 await ApplyContextImagesAsync(context);
                 await RefreshContextStateAsync(context);
                 break;
@@ -167,8 +165,6 @@ internal static class Program
 
     private static async Task HandleKeyDownAsync(string context)
     {
-        await SetTitleAsync(context, "Working...");
-
         try
         {
             await EnsureImagesAsync();
@@ -177,17 +173,17 @@ internal static class Program
             var broughtForward = BringDiscordToFrontOrLaunch();
             if (!broughtForward)
             {
-                await SetTitleAsync(context, "Not Found");
+                await ShowAlertAsync(context);
                 await RefreshAllContextStatesAsync();
                 return;
             }
 
-            await SetTitleAsync(context, DefaultTitle);
+            await ShowOkAsync(context);
             await RefreshAllContextStatesAsync();
         }
         catch
         {
-            await SetTitleAsync(context, "Error");
+            await ShowAlertAsync(context);
             await RefreshAllContextStatesAsync();
         }
     }
@@ -307,12 +303,12 @@ internal static class Program
         using var running = new Bitmap(normal);
         using (var graphics = Graphics.FromImage(running))
         using (var badgeBrush = new SolidBrush(Color.FromArgb(43, 172, 119)))
-        using (var badgePen = new Pen(Color.Black, 4.5f))
+        using (var badgePen = new Pen(Color.Black, 4.0f))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             const int size = 144;
-            var badgeDiameter = (int)Math.Round(size * 0.27);
-            var badgeInset = (int)Math.Round(size * 0.03);
+            var badgeDiameter = (int)Math.Round(size * 0.255);
+            var badgeInset = (int)Math.Round(size * 0.065);
             var badgeX = size - badgeDiameter - badgeInset;
             var badgeY = size - badgeDiameter - badgeInset;
             graphics.FillEllipse(badgeBrush, badgeX, badgeY, badgeDiameter, badgeDiameter);
@@ -409,17 +405,21 @@ internal static class Program
         await SetImageAsync(context, _runningImageDataUrl, RunningState);
     }
 
-    private static async Task SetTitleAsync(string context, string title)
+    private static async Task ShowOkAsync(string context)
     {
         await SendJsonAsync(new
         {
-            @event = "setTitle",
-            context,
-            payload = new
-            {
-                title,
-                target = 0
-            }
+            @event = "showOk",
+            context
+        });
+    }
+
+    private static async Task ShowAlertAsync(string context)
+    {
+        await SendJsonAsync(new
+        {
+            @event = "showAlert",
+            context
         });
     }
 
