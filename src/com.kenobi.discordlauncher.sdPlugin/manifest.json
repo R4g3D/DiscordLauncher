@@ -1,0 +1,39 @@
+﻿{
+  "Author": "Kenobi",
+  "CodePath": "app.html",
+  "Description": "Dedicated Stream Deck action to reliably launch or focus Discord on Windows.",
+  "Name": "Discord Launcher",
+  "SDKVersion": 2,
+  "Icon": "images/plugin-icon",
+  "URL": "https://github.com/kenobi/discordlauncher",
+  "Version": "1.0.0",
+  "Software": {
+    "MinimumVersion": "5.0"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Category": "Discord",
+  "CategoryIcon": "images/plugin-icon",
+  "Actions": [
+    {
+      "Icon": "images/action-icon",
+      "Name": "Launch / Focus Discord",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "images/action-icon"
+        },
+        {
+          "Image": "images/action-icon-running"
+        }
+      ],
+      "Tooltip": "If Discord is closed, launch it through Update.exe. If open, restore and focus its window.",
+      "UUID": "com.kenobi.discordlauncher.launch"
+    }
+  ]
+}
