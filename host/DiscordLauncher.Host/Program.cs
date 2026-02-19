@@ -245,7 +245,12 @@ internal static class Program
             return false;
         }
 
-        _ = ShowWindowAsync(process.MainWindowHandle, 9); // SW_RESTORE
+        // Only restore if minimized. Forcing SW_RESTORE on a visible window can
+        // break Discord's fullscreen/window state.
+        if (IsIconic(process.MainWindowHandle))
+        {
+            _ = ShowWindowAsync(process.MainWindowHandle, 9); // SW_RESTORE
+        }
         Thread.Sleep(120);
         _ = SetForegroundWindow(process.MainWindowHandle);
         return true;
@@ -483,6 +488,9 @@ internal static class Program
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern uint PrivateExtractIcons(
