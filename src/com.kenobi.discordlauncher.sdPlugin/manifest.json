@@ -20,16 +20,16 @@
   "CategoryIcon": "images/plugin-icon",
   "Actions": [
     {
-      "Icon": "images/action-icon",
+      "Icon": "images/plugin-icon",
       "Name": "Launch / Focus Discord",
       "Controllers": ["Keypad"],
       "DisableAutomaticStates": true,
       "States": [
         {
-          "Image": "images/action-icon"
+          "Image": "images/plugin-icon"
         },
         {
-          "Image": "images/action-icon-running"
+          "Image": "images/plugin-icon"
         }
       ],
       "Tooltip": "If Discord is closed, launch it through Update.exe. If open, restore and focus its window.",

@@ -1,0 +1,78 @@
+name: Build and Release Stream Deck Plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read plugin metadata
+        id: meta
+        shell: pwsh
+        run: |
+          $manifestPath = "src/com.kenobi.discordlauncher.sdPlugin/manifest.json"
+          if (-not (Test-Path $manifestPath)) {
+            throw "Manifest not found at $manifestPath"
+          }
+
+          $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+          $pluginVersion = $manifest.Version
+          if ([string]::IsNullOrWhiteSpace($pluginVersion)) {
+            throw "Version is missing in manifest.json"
+          }
+
+          $artifactName = "DiscordLauncher-$pluginVersion.streamDeckPlugin"
+
+          "plugin_version=$pluginVersion" >> $env:GITHUB_OUTPUT
+          "artifact_name=$artifactName" >> $env:GITHUB_OUTPUT
+
+      - name: Package plugin
+        id: package
+        shell: pwsh
+        run: |
+          $pluginDir = "src/com.kenobi.discordlauncher.sdPlugin"
+          $stagingDir = "build/package"
+          $zipPath = "build/$env:ARTIFACT_NAME.zip"
+          $artifactPath = "build/$env:ARTIFACT_NAME"
+
+          Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force $stagingDir | Out-Null
+          Copy-Item $pluginDir -Destination "$stagingDir/com.kenobi.discordlauncher.sdPlugin" -Recurse -Force
+
+          Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          Remove-Item $artifactPath -Force -ErrorAction SilentlyContinue
+          Compress-Archive -Path "$stagingDir/*" -DestinationPath $zipPath
+          Move-Item $zipPath $artifactPath
+
+          "artifact_path=$artifactPath" >> $env:GITHUB_OUTPUT
+        env:
+          ARTIFACT_NAME: ${{ steps.meta.outputs.artifact_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}
+          path: ${{ steps.package.outputs.artifact_path }}
+
+      - name: Publish GitHub Release (tag pushes)
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $title = "Discord Launcher $tag"
+          $artifact = "${{ steps.package.outputs.artifact_path }}"
+
+          gh release create $tag $artifact --title $title --generate-notes
