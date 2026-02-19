@@ -308,10 +308,10 @@ internal static class Program
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             const float width = 144f;
             const float height = 144f;
-            var centerX = width * 0.76510f;
-            var centerY = height * 0.67277f;
-            var greenDiameter = width * 0.1714286f;
-            var ringDiameter = width * 0.3222857f;
+            var centerX = width * 0.7744f;
+            var centerY = height * 0.6771f;
+            var greenDiameter = width * 0.20265f;
+            var ringDiameter = width * 0.38167f;
 
             var ringX = centerX - (ringDiameter / 2f);
             var ringY = centerY - (ringDiameter / 2f);
